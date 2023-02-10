@@ -1,26 +1,25 @@
-import Head from "next/head";
-import Image from "next/image";
-import { getProductsInCollection } from "@/lib/shopify";
-import { Products } from "@/types";
-import ProductList from "@/components/ProductList";
+import Head from 'next/head'
+import Image from 'next/image'
+import { getProductsInCollection } from '@/lib/shopify'
+import { Products } from '@/types'
+import ProductList from '@/components/ProductList'
 
 export default function Home({ products }: { products: Products }) {
-  console.log("products", products);
-  return (
-    <>
-      <div className="text-5xl">
-        <ProductList products={products}></ProductList>
-      </div>
-    </>
-  );
+    return (
+        <>
+            <div className="text-5xl">
+                <ProductList products={products}></ProductList>
+            </div>
+        </>
+    )
 }
 
 export async function getStaticProps() {
-  const collection = await getProductsInCollection();
-  const products = collection.edges;
-  return {
-    props: {
-      products,
-    },
-  };
+    const collection = await getProductsInCollection()
+    const products = collection.edges
+    return {
+        props: {
+            products
+        }
+    }
 }
