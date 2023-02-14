@@ -9,6 +9,23 @@ export type Product = {
                 values: string[]
             }
         ]
+        media: {
+            nodes: [
+                {
+                    __typename
+                    mediaContentType
+                    previewImage
+                }
+            ]
+            edges: [
+                {
+                    node: {
+                        alt: string
+                        sources
+                    }
+                }
+            ]
+        }
         id: string
         title: string
         handle: string

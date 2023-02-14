@@ -18,39 +18,40 @@ async function ShopifyDate(query: string) {
         })
         return data
     } catch (error) {
+        console.error(error)
         throw new Error('Products not fetched')
     }
 }
 
 export async function getProductsInCollection() {
     const query = `#graphql
-  {
-    collectionByHandle(handle:"frontpage"){
-      title
-      products(first:25){
-        edges{
-          node{
-            id
-            title
-            handle
-            priceRange{
-              minVariantPrice{
-                amount
+    {
+      collectionByHandle(handle:"frontpage"){
+        title
+        products(first:25){
+          edges{
+            node{
+              id
+              title
+              handle
+              priceRange{
+                minVariantPrice{
+                  amount
+                }
               }
-            }
-            images(first:5){
-              edges{
-                node{
-                  url
-                  altText
+              images(first:5){
+                edges{
+                  node{
+                    url
+                    altText
+                  }
                 }
               }
             }
           }
         }
       }
-    }
-  }   
+    }   
   `
 
     const res = await ShopifyDate(query)
@@ -60,16 +61,16 @@ export async function getProductsInCollection() {
 
 export async function getAllProducts() {
     const query = `#graphql
-  {
-    products(first: 100) {
-      edges {
-        node {
-          handle
-          id
+    {
+      products(first: 100) {
+        edges {
+          node {
+            handle
+            id
+          }
         }
       }
     }
-  }
   `
     const res = await ShopifyDate(query)
     const slugs = res?.data?.products?.edges ? res.data.products.edges : []
@@ -89,7 +90,14 @@ export async function getProduct(handle: string) {
         id
         values
       }
-      variants(first:5){
+      media(first:5){
+        edges {
+        node {
+          ... fieldsForMediaTypes
+        }
+        }
+      }
+      variants(first:10){
         edges{
           node{ 
             id
@@ -118,8 +126,121 @@ export async function getProduct(handle: string) {
       }
     }
   }
+
+  fragment fieldsForMediaTypes on Media {
+  alt
+  mediaContentType
+  # preview {
+  #   image {
+  #     id
+  #     altText
+  #     url
+  #   }
+  # }
+  #status
+  # ... on Video {
+  #   id
+  #   sources {
+  #     format
+  #     height
+  #     mimeType
+  #     url
+  #     width
+  #   }
+  #   originalSource {
+  #     format
+  #     height
+  #     mimeType
+  #     url
+  #     width
+  #   }
+  # }
+  # ... on ExternalVideo {
+  #   id
+  #   host
+  #   embeddedUrl
+  # }
+  ... on Model3d {
+    sources {
+      format
+      mimeType
+      url
+      __typename
+    }
+    # originalSource {
+    #   format
+    #   mimeType
+    #   url
+    # }
+  # }
+  # ... on MediaImage {
+  #   id
+  #   image {
+  #     altText
+  #     url
+  #   }
+  # }
+}
+}
+
 `
     const res = await ShopifyDate(query)
     const product = res?.data?.productByHandle ? res.data.productByHandle : {}
     return product
+}
+
+export async function createCheckout(id: string, quantity: number) {
+    const query = `#graphql
+    mutation {
+      checkoutCreate(input: {
+        lineItems: [{variantId: "${id}", quantity: ${quantity}}]
+      }){
+        checkout{
+          id
+          webUrl
+        }
+      }
+    }
+`
+    const res = await ShopifyDate(query)
+    const checkout = res?.data?.checkoutCreate.checkout ? res.data.checkoutCreate.checkout : {}
+    return checkout
+}
+
+export async function updateCheckout(
+    id: string,
+    lineItems: { id: string; variantQuantity: number }[]
+) {
+    const lineItemsObject = lineItems.map((item) => {
+        return `{
+        variantId:'${item.id}',
+        quantity:${item.variantQuantity}
+      }`
+    })
+    const query = `#graphql
+    {
+      mutation{
+        checkoutLineItemsReplace(lineItems:[${lineItemsObject}],checkoutId:"${id}"){
+          checkout{
+            id
+            url
+            lineItems(first:25){
+              edges{
+                node{
+                  id
+                  title
+                  quantity
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  `
+    const res = await ShopifyDate(query)
+    const checkout = res?.data?.checkoutLineItemsReplace?.checkout
+        ? res.data.checkoutLineItemsReplace.checkout
+        : []
+    return checkout
 }
