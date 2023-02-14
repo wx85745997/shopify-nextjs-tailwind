@@ -22,6 +22,7 @@ export default function ProductPageContent({ product }: { product: Product['node
             images.push(
                 <SwiperSlide key={`slide-${i}`}>
                     <Image
+                        loading="lazy"
                         className="fill-inherit object-cover"
                         src={image.node.url}
                         alt={image.node.altText}

@@ -21,6 +21,7 @@ export default function Nav() {
                     onClick={() => {
                         setCarOpen(!carOpen)
                     }}
+                    href="www.google.com"
                     className="text-md font-blod cursor-pointer"
                 >
                     Cart({carQuantity})

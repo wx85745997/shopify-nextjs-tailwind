@@ -82,6 +82,7 @@ export default function MiniCart({ car }: { car: CarItem[] }) {
                                                             >
                                                                 <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
                                                                     <Image
+                                                                        loading="lazy"
                                                                         fill
                                                                         src={product.image}
                                                                         alt={product.title}
